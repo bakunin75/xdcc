@@ -108,20 +108,20 @@ class XDCC(irc.client.SimpleIRCClient):
         self.last_print_time = 0
 
     def __getattr__(self, name):
-		if name in ["pubmsg", "all_raw_messages"]:
-			# known attributes
-			LOG.debug("An event has just triggered the non existent attribute %s!", name)
-		else:
-			LOG.warning("An event has just triggered the non existent attribute %s!", name)
+        if name in ["pubmsg", "all_raw_messages"]:
+            # known attributes
+            LOG.debug("An event has just triggered the non existent attribute %s!", name)
+        else:
+            LOG.warning("An event has just triggered the non existent attribute %s!", name)
         msg = "{.__name__!r} object has no attribute {!r}"
         cls = type(self)
         raise AttributeError(msg.format(cls, name))
-		
-	def on_error(self, c, e):
-		"""
-		Catch IRC error.
-		"""
-		LOG.error(f"Connection: {c}; Error: {e}")
+            
+    def on_error(self, c, e):
+        """
+        Catch IRC error.
+        """
+        LOG.error(f"Connection: {c}; Error: {e}")
 
 
     def on_ctcp(self, connection, event):
@@ -305,12 +305,12 @@ def main():
         default=random_nickname(),
     )
     parser.add_argument(
-		"--verbode",
+        "--verbode",
         "-v", nargs="?", 
-		type=str, 
-		action="count", 
-		default=0,
-		help="Enable verbose mode and set logger level: DEBUG (-vvv), INFO (-vv), WARNING (-v), ERROR/CRITICAL.", 
+        type=str, 
+        action="count", 
+        default=0,
+        help="Enable verbose mode and set logger level: DEBUG (-vvv), INFO (-vv), WARNING (-v), ERROR/CRITICAL.", 
     )
     parser.add_argument("bot", type=str, help="The XDCC Bot name.")
     parser.add_argument(
@@ -334,14 +334,14 @@ def main():
     elif args.stdout and args.action != "list":
         parser.error("--stdout can only be used with the 'list' action")
 
-	if args.verbose >= 3:
-		LOG.setLevel(logging.DEBUG)
-	if args.verbose == 2:
-		LOG.setLevel(logging.INFO)
-	if args.verbose == 1:
-		LOG.setLevel(logging.WARNING)
-	else:
-		LOG.setLevel(logging.ERROR)
+    if args.verbose >= 3:
+        LOG.setLevel(logging.DEBUG)
+    if args.verbose == 2:
+        LOG.setLevel(logging.INFO)
+    if args.verbose == 1:
+        LOG.setLevel(logging.WARNING)
+    else:
+        LOG.setLevel(logging.ERROR)
 
     LOG.info("Using nickname %s", args.nickname)
 
