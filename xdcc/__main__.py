@@ -108,10 +108,21 @@ class XDCC(irc.client.SimpleIRCClient):
         self.last_print_time = 0
 
     def __getattr__(self, name):
-        LOG.debug("An event has just triggered the non existent attribute %s!", name)
+		if name in ["pubmsg", "all_raw_messages"]:
+			# known attributes
+			LOG.debug("An event has just triggered the non existent attribute %s!", name)
+		else:
+			LOG.warning("An event has just triggered the non existent attribute %s!", name)
         msg = "{.__name__!r} object has no attribute {!r}"
         cls = type(self)
         raise AttributeError(msg.format(cls, name))
+		
+	def on_error(self, c, e):
+		"""
+		Catch IRC error.
+		"""
+		LOG.error(f"Connection: {c}; Error: {e}")
+
 
     def on_ctcp(self, connection, event):
         """Method called when a ctcp message has arrived.
@@ -119,7 +130,7 @@ class XDCC(irc.client.SimpleIRCClient):
         For more information on the connection and event arguments
         see the documentation for irc.client.SimpleIRCClient
         """
-        LOG.debug("CTCP: %s", event.arguments)
+        LOG.info("CTCP: %s", event.arguments)
         if event.arguments[0] != "DCC":
             return
 
@@ -183,7 +194,7 @@ class XDCC(irc.client.SimpleIRCClient):
 
     def on_dcc_disconnect(self, connection, event):
         """This is called when the bot disconnect the DCC comunication."""
-        LOG.debug("DCC connection closed by remote peer!")
+        LOG.warning("DCC connection closed by remote peer!")
         if not self.args.stdout:
             self.file.close()
             print("")
@@ -203,7 +214,7 @@ class XDCC(irc.client.SimpleIRCClient):
         When the send action was chosen, this method raise StopIteration when there is
         no more pack to be downloaded.
         """
-        LOG.debug("Sending command to the bot...")
+        LOG.info("Sending command to the bot...")
         if self.args.action == "list":
             self.connection.ctcp("xdcc", self.args.bot, "send list")
         elif self.args.action == "send":
@@ -213,7 +224,7 @@ class XDCC(irc.client.SimpleIRCClient):
 
     def on_welcome(self, c, e):
         """This is called when we are welcomed by the IRC server."""
-        LOG.debug("Welcome page of the server was reached successfully.")
+        LOG.info("Welcome page of the server was reached successfully.")
         if self.args.channel:
             self.requested = False
             self.connection.join(self.args.channel)
@@ -223,7 +234,7 @@ class XDCC(irc.client.SimpleIRCClient):
     def on_join(self, c, e):
         """Called when we successfully joined the channel."""
         # Some channels can trigger this function multiple times
-        LOG.debug("Joined to channel %s.", self.args.channel)
+        LOG.info("Joined to channel %s.", self.args.channel)
         if not self.requested:
             self.request_file_to_bot()
             self.requested = True
@@ -237,7 +248,7 @@ class XDCC(irc.client.SimpleIRCClient):
     def on_privnotice(self, c, e):
         """Called when someone(server, channel or bot) sends a privnotice for
         us."""
-        LOG.debug("PRIVNOTICE: %s", e.arguments[0])
+        LOG.info("PRIVNOTICE: %s", e.arguments[0])
 
         source = str(e.source)
         if source.startswith(self.args.bot):
@@ -245,7 +256,7 @@ class XDCC(irc.client.SimpleIRCClient):
 
     def on_disconnect(self, connection, event):
         """Called when disconnecting from the server."""
-        LOG.debug("Disconnected!")
+        LOG.info("Disconnected!")
         sys.exit(0)
 
 
@@ -294,7 +305,12 @@ def main():
         default=random_nickname(),
     )
     parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Enable verbose mode."
+		"--verbode",
+        "-v", nargs="?", 
+		type=str, 
+		action="count", 
+		default=0,
+		help="Enable verbose mode and set logger level: DEBUG (-vvv), INFO (-vv), WARNING (-v), ERROR/CRITICAL.", 
     )
     parser.add_argument("bot", type=str, help="The XDCC Bot name.")
     parser.add_argument(
@@ -318,10 +334,16 @@ def main():
     elif args.stdout and args.action != "list":
         parser.error("--stdout can only be used with the 'list' action")
 
-    if args.verbose:
-        LOG.setLevel(logging.DEBUG)
+	if args.verbose >= 3:
+		LOG.setLevel(logging.DEBUG)
+	if args.verbose == 2:
+		LOG.setLevel(logging.INFO)
+	if args.verbose == 1:
+		LOG.setLevel(logging.WARNING)
+	else:
+		LOG.setLevel(logging.ERROR)
 
-    LOG.debug("Using nickname %s", args.nickname)
+    LOG.info("Using nickname %s", args.nickname)
 
     c = XDCC(args)
 
