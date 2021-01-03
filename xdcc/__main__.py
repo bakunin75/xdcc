@@ -42,11 +42,11 @@ def get_console_logger(name):
     Return:
          logging.getLogger: log
     """
-    log = logging.getLogger(name)
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    log.addHandler(handler)
-    return log
+    logger.addHandler(handler)
+    return logger
 
 
 LOG = get_console_logger("verbose")
@@ -121,7 +121,7 @@ class XDCC(irc.client.SimpleIRCClient):
         """
         Catch IRC error.
         """
-        LOG.error(f"Connection: {c}; Error: {e}")
+        LOG.error(f"Error: {e}")
 
 
     def on_ctcp(self, connection, event):
@@ -333,36 +333,35 @@ def main():
     elif args.stdout and args.action != "list":
         parser.error("--stdout can only be used with the 'list' action")
 
-    LOG.info(f"Logger {args.verbose}")
-
+   
     if args.verbose >= 3:
         LOG.setLevel(logging.DEBUG)
-    if args.verbose == 2:
+    elif args.verbose == 2:
         LOG.setLevel(logging.INFO)
-    if args.verbose == 1:
+    elif args.verbose == 1:
         LOG.setLevel(logging.WARNING)
     else:
         LOG.setLevel(logging.ERROR)
 
     LOG.info("Using nickname %s", args.nickname)
 
-    # c = XDCC(args)
+    c = XDCC(args)
 
-    # def cute_exit(sig, frame):
-        # """Try to disconnect from the server when a SIGINT is received."""
-        # print("SIGINT received! Quitting...")
-        # c.connection.quit()
+    def cute_exit(sig, frame):
+        """Try to disconnect from the server when a SIGINT is received."""
+        print("SIGINT received! Quitting...")
+        c.connection.quit()
 
-    # signal.signal(signal.SIGINT, cute_exit)
+    signal.signal(signal.SIGINT, cute_exit)
 
-    # try:
-        # c.connect(args.server, args.port, args.nickname)
-    # except irc.client.ServerConnectionError as x:
-        # print(x)
-        # print("Something bad has happened")
-        # sys.exit(1)
+    try:
+        c.connect(args.server, args.port, args.nickname)
+    except irc.client.ServerConnectionError as x:
+        print(x)
+        print("Something bad has happened")
+        sys.exit(1)
 
-    # c.start()
+    c.start()
 
 
 if __name__ == "__main__":
