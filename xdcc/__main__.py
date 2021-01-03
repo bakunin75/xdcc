@@ -305,9 +305,8 @@ def main():
         default=random_nickname(),
     )
     parser.add_argument(
-        "--verbode",
-        "-v", nargs="?", 
-        type=str, 
+        "--verbose",
+        "-v", 
         action="count", 
         default=0,
         help="Enable verbose mode and set logger level: DEBUG (-vvv), INFO (-vv), WARNING (-v), ERROR/CRITICAL.", 
