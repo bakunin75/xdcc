@@ -333,6 +333,8 @@ def main():
     elif args.stdout and args.action != "list":
         parser.error("--stdout can only be used with the 'list' action")
 
+    LOG.info(f"Logger {args.verbose}")
+
     if args.verbose >= 3:
         LOG.setLevel(logging.DEBUG)
     if args.verbose == 2:
