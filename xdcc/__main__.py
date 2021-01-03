@@ -346,23 +346,23 @@ def main():
 
     LOG.info("Using nickname %s", args.nickname)
 
-    c = XDCC(args)
+    # c = XDCC(args)
 
-    def cute_exit(sig, frame):
-        """Try to disconnect from the server when a SIGINT is received."""
-        print("SIGINT received! Quitting...")
-        c.connection.quit()
+    # def cute_exit(sig, frame):
+        # """Try to disconnect from the server when a SIGINT is received."""
+        # print("SIGINT received! Quitting...")
+        # c.connection.quit()
 
-    signal.signal(signal.SIGINT, cute_exit)
+    # signal.signal(signal.SIGINT, cute_exit)
 
-    try:
-        c.connect(args.server, args.port, args.nickname)
-    except irc.client.ServerConnectionError as x:
-        print(x)
-        print("Something bad has happened")
-        sys.exit(1)
+    # try:
+        # c.connect(args.server, args.port, args.nickname)
+    # except irc.client.ServerConnectionError as x:
+        # print(x)
+        # print("Something bad has happened")
+        # sys.exit(1)
 
-    c.start()
+    # c.start()
 
 
 if __name__ == "__main__":
